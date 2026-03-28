@@ -77,10 +77,11 @@ stdenv.mkDerivation rec {
     bash "$CUPSWRAPPER"
 
     # Restore paths in extracted PPD wrapper filter
+    # Replace $PWD/usr/local with $out/share first (more specific), then $PWD/usr with $out
     if [ -f usr/lib/cups/filter/brlpdwrapperHL2270DW ]; then
       substituteInPlace usr/lib/cups/filter/brlpdwrapperHL2270DW \
-        --replace-warn "$PWD/usr" "$out/usr" \
-        --replace-warn "/usr/local" "/usr/share"
+        --replace-warn "$PWD/usr/local" "$out/share" \
+        --replace-warn "$PWD/usr" "$out"
       chmod +x usr/lib/cups/filter/brlpdwrapperHL2270DW
     fi
 
@@ -130,9 +131,8 @@ stdenv.mkDerivation rec {
       cp usr/lib/cups/filter/brlpdwrapperHL2270DW $out/lib/cups/filter/
     fi
 
-    # Fix paths in installed scripts to point to $out
-    for f in $out/lib/cups/filter/brlpdwrapperHL2270DW \
-             $out/share/Brother/Printer/${model}/lpd/filterHL2270DW \
+    # Fix paths in LPD scripts to point to $out
+    for f in $out/share/Brother/Printer/${model}/lpd/filterHL2270DW \
              $out/share/Brother/Printer/${model}/lpd/psconvert2; do
       if [ -f "$f" ]; then
         substituteInPlace "$f" --replace-quiet "/usr/share/Brother" "$out/share/Brother"
